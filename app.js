@@ -1,45 +1,75 @@
-const express = require('express');
-const app = express();
-const date = require(__dirname + '/date.js');
+const express = require("express");
+const mongoose = require('mongoose');
 
-let items = ['Despertarse', 'Lavar Dientes', 'Desayunar'];
-let workItems = [];
+const app = express();
 
 app.set('view engine', 'ejs');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(express.static("public"));
 
-app.use(express.static('public'));
+main().catch(err => console.log(err));
 
-app.get('/', (req, res) =>{
+async function main(){
+    await mongoose.connect('mongodb://localhost:27017/itemsDB');
+}
 
-    let day = date.getDay();
-
-    res.render('list', {listTitle: day, newListItem: items});
+const itemSchema = new mongoose.Schema({
+  name : {
+    type: String,
+    required: [true]
+  }
 });
 
-app.post('/', (req, res) => {
+const Item = mongoose.model('Item', itemSchema);
 
-    let item = req.body.newItem;
-
-    if (req.body.list === 'Lista'){
-        workItems.push(item);
-        res.redirect('/work');
-    } else{
-        items.push(item);
-        res.redirect('/');
-    }
+const item1 = new Item({
+  name: 'Cocinar'
 });
 
-app.get('/work', (req, res)=> {
-    res.render('list', {listTitle: 'Lista de Trabajos', newListItem: workItems})
+const item2 = new Item({
+  name: 'Comer'
 });
 
-app.get('/about', (req, res) => {
-    res.render('about');
+const defaultItems = [item1, item2];
+
+// Item.insertMany(defaultItems, (err) => {
+//   if (err){
+//     console.log(err);
+//   } else{
+//     console.log('Guardado con éxito');
+//   }
+// });
+
+
+app.get("/", function(req, res) {
+
+  res.render("list", {listTitle: 'Today', newListItems: items});
+
 });
 
-app.listen(3000, ()=>{
-    console.log('Corriendo en el puerto 3000');
+app.post("/", function(req, res){
+
+  const item = req.body.newItem;
+
+  if (req.body.list === "Work") {
+    workItems.push(item);
+    res.redirect("/work");
+  } else {
+    items.push(item);
+    res.redirect("/");
+  }
+});
+
+app.get("/work", function(req,res){
+  res.render("list", {listTitle: "Work List", newListItems: workItems});
+});
+
+app.get("/about", function(req, res){
+  res.render("about");
+});
+
+app.listen(3000, function() {
+  console.log("Server started on port 3000");
 });
