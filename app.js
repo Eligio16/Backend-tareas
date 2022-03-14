@@ -62,6 +62,23 @@ app.post("/", function(req, res){
   });
 
   item.save();
+
+  res.redirect('/');
+});
+
+app.post('/delete', (req, res) => {
+  const checkedItemId = req.body.checkbox;
+
+  Item.findByIdAndRemove(checkedItemId, function(err){
+    if(!err){
+      console.log('Eliminado');
+      res.redirect('/');
+    }
+    else{
+      console.log('No eliminado');
+      res.redirect('/');
+    }
+  });
 });
 
 app.get("/work", function(req,res){
