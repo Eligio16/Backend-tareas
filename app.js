@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require('mongoose');
+let _ = require('lodash');
 
 const app = express();
 
@@ -33,6 +34,13 @@ const item2 = new Item({
 });
 
 const defaultItems = [item1, item2];
+
+const listSchema = {
+  name: String,
+  items: [itemSchema]
+};
+
+const List = mongoose.model('List', listSchema);
 
 app.get("/", function(req, res) {
 
@@ -75,14 +83,33 @@ app.post('/delete', (req, res) => {
       res.redirect('/');
     }
     else{
-      console.log('No eliminado');
+      console.log(err);
       res.redirect('/');
     }
   });
 });
 
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
+app.get('/:idListName', (req, res) => {
+  const idListName = req.params.idListName;
+
+  List.findOne({name: idListName}, (err, foundList) => {
+    if (!err){
+      if(!foundList){
+        //No Existe
+        const list = new List({
+          name: idListName,
+          items: defaultItems
+        });
+      
+        list.save();
+        res.redirect('/'+idListName);
+      } else{
+        //Existe
+        res.render('list', {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }  
+
+  });
 });
 
 app.get("/about", function(req, res){
