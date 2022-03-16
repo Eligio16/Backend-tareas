@@ -13,7 +13,7 @@ app.use(express.static("public"));
 main().catch(err => console.log(err));
 
 async function main(){
-    await mongoose.connect('mongodb+srv://admin:admin@cluster0.elvvk.mongodb.net/itemsDB');
+    await mongoose.connect('Conexion con mongo Atlas');
 }
 
 const itemSchema = new mongoose.Schema({
